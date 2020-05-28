@@ -33,7 +33,7 @@
   become_method: sudo
   apt:
     name: ufw
-    state: latest
+    state: present
     update_cache: 'yes'
     cache_valid_time: 3600
   tags:
@@ -45,7 +45,7 @@
   become_method: sudo
   apt:
     name: aptitude
-    state: latest
+    state: present
     update_cache: 'yes'
     cache_valid_time: 3600
   tags:

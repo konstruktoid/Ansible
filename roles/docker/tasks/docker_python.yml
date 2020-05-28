@@ -4,7 +4,7 @@
   become_method: sudo
   package:
     name: python3-pip
-    state: latest
+    state: present
     install_recommends: 'no'
   tags: python
 
@@ -13,7 +13,7 @@
   become_method: sudo
   package:
     name: python3-setuptools
-    state: latest
+    state: present
     install_recommends: 'no'
   tags: python
 
