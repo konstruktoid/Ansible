@@ -1,38 +1,29 @@
 Vagrant.configure(2) do |config|
+  config.vbguest.installer_options = { allow_kernel_upgrade: true }
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "2048"
     vb.default_nic_type = "Am79C973"
   end
 
-  config.vm.define "disco" do |disco|
-    disco.vm.box = "ubuntu/disco64"
-    disco.ssh.insert_key = true
-    disco.vm.network "private_network", ip: "10.2.3.40"
-    disco.vm.hostname = "disco"
-    disco.vm.boot_timeout = 600
-    disco.vm.provision "shell",
+  config.vm.define "bionic" do |bionic|
+    bionic.vm.box = "ubuntu/bionic64"
+    bionic.ssh.insert_key = true
+    bionic.vm.network "private_network", ip: "10.2.3.40"
+    bionic.vm.hostname = "bionic"
+    bionic.vm.boot_timeout = 600
+    bionic.vm.provision "shell",
       inline: "apt-get update && apt-get -y install python3-pexpect --no-install-recommends"
   end
 
   (1..2).each do |i|
-    config.vm.define "bionic#{i}" do |bionic|
-      bionic.vm.box = "ubuntu/bionic64"
-      bionic.vm.network "private_network", ip:"10.2.3.4#{i}"
-      bionic.vm.hostname = "bionic#{i}"
-      bionic.vm.boot_timeout = 600
-      bionic.vm.provision "shell",
+    config.vm.define "focal#{i}" do |focal|
+      focal.vm.box = "ubuntu/focal64"
+      focal.vm.network "private_network", ip:"10.2.3.4#{i}"
+      focal.vm.hostname = "focal#{i}"
+      focal.vm.boot_timeout = 600
+      focal.vm.provision "shell",
         inline: "apt-get update && apt-get -y install python3-pexpect --no-install-recommends"
     end
-  end
-
-  config.vm.define "suse" do |suse|
-    suse.vm.box = "opensuse/Tumbleweed.x86_64"
-    suse.ssh.insert_key = true
-    suse.vm.network "private_network", ip: "10.2.3.43"
-    suse.vm.hostname = "suse"
-    suse.vm.boot_timeout = 600
-    suse.vm.provision "shell",
-      inline: "hostnamectl set-hostname suse"
   end
 
   config.vm.define "centos" do |centos|
@@ -44,10 +35,12 @@ Vagrant.configure(2) do |config|
     end
     centos.vm.hostname = "centos"
     centos.vm.boot_timeout = 600
+    centos.vm.provision "shell",
+      inline: "yum -y update && yum -y install python3"
   end
 
   config.vm.define "fedora" do |fedora|
-    fedora.vm.box = "bento/fedora-30"
+    fedora.vm.box = "bento/fedora-31"
     fedora.ssh.insert_key = true
     fedora.vm.network "private_network", ip: "10.2.3.45"
     fedora.vm.hostname = "fedora"
