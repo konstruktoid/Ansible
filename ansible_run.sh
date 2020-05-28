@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o pipefail
+
 NETWORK=$(ansible localhost -m setup -a "filter=ansible_default_ipv4" 2>/dev/null | grep "network" | awk '{print $NF}' | tr -d '",')
 KNOWN_HOSTS="$HOME/.ssh/known_hosts"
 TMPHOSTS=$(mktemp)
@@ -10,12 +12,37 @@ IFS=$'\n'
 if [ -z "$NETWORK" ]; then
   echo "Missing network."
   exit 1
-elif [ -z "$KNOWN_HOSTS" ] || [ ! -f "$KNOWN_HOSTS" ]; then
+elif [ ! -r "$KNOWN_HOSTS" ]; then
   echo "Verify the $KNOWN_HOSTS file."
 fi
 
+  if ! command -v vagrant 1>/dev/null; then
+    exit 1
+  fi
+
+  if ! vagrant validate Vagrantfile; then
+    exit 1
+  fi
+
+if ! find ./ -type f -name '*.y*ml' ! -name '.*' -print0 | \
+  xargs -0 ansible-lint; then
+    echo "ansible-lint failed."
+    exit 1
+fi
+
+if ! find ./ -type f -name '*.y*ml' ! -name '.*' -print0 | \
+  xargs -0 yamllint -d "{extends: default, rules: {line-length: {level: warning}}}"; then
+    echo "yamllint failed."
+    exit 1
+fi
+
 if [ "$1" = "vagrant" ]; then
-  if [ ! -f "./hosts" ] && [ ! -f "./.vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory" ] || [ "$2" = "hosts" ]; then
+  if [ "$(vagrant status | grep -c 'running.*virtualbox')" -le 0 ]; then
+    echo "No vagrant boxes are running. Exiting."
+    exit 1
+  fi
+
+  if [ ! -r "./hosts" ] && [ ! -r "./.vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory" ] || [ "$2" = "hosts" ]; then
     echo "Generating Ansible hosts file using Vagrant."
     {
       echo "[vagrant]"
@@ -27,40 +54,24 @@ if [ "$1" = "vagrant" ]; then
       done
     } > ./hosts
     HOSTFILE="./hosts"
-  elif [ -f "./.vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory" ]; then
+  elif [ -r "./.vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory" ]; then
     HOSTFILE="./.vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory"
-  elif [ -f "./hosts" ]; then
+  elif [ -r "./hosts" ]; then
+    HOSTFILE="./hosts"
     echo "./hosts file exists. Won't overwrite."
   else
-    echo "vagrant hosts flag not set."
-  fi
-
-  if [ -n "$HOSTFILE" ]; then
-    echo "Using $HOSTFILE."
-  fi
-
-  if ! command -v vagrant 1>/dev/null; then
-    exit 1
-  fi
-
-  if ! vagrant validate Vagrantfile; then
-    exit 1
+    echo "Vagrant hosts flag not set."
   fi
 fi
 
-if ! find ./ -type f -name '*.y*ml' ! -name '.*' -print0 | \
-  xargs -0 ansible-lint -x 403 -x 204; then
-    echo 'ansible-lint failed.'
-    exit 1
+if [ -r "$HOSTFILE" ]; then
+  echo "Using $HOSTFILE."
+else
+  echo "No working host file. Exiting."
+  exit 1
 fi
 
-if ! find ./ -type f -name '*.y*ml' ! -name '.*' -print0 | \
-  xargs -0 yamllint -d "{extends: default, rules: {line-length: {level: warning}}}"; then
-    echo 'yamllint failed.'
-    exit 1
-fi
-
-if [ -f /etc/ansible/hosts ] && [ "$1" != "vagrant" ]; then
+if [ -r /etc/ansible/hosts ] && [ "$1" != "vagrant" ]; then
   for host in $(grep -E -v '#|\[' /etc/ansible/hosts | awk '{print $1}' | uniq); do
     if dig +answer "$1" | grep -q 'status: NOERROR'; then
       ssh-keyscan -H "$host" >> "$TMPHOSTS"
