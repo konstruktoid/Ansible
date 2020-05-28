@@ -7,37 +7,92 @@ Docker daemon and container playbooks, additional roles are available at https:/
 
 INFO: This is a lab repository and it may break things.
 
-Tested on `ubuntu/bionic64` and `ubuntu/disco64` using Vagrant.
+[source]
+----
+bento/centos-8
+bento/debian-10
+bento/fedora-31
+ubuntu/bionic64
+ubuntu/focal64
+----
 
 [source]
 ----
 .
-└── roles
-    ├── acng_container
-    │   ├── defaults
-    │   └── tasks
-    ├── bootstrap
-    │   └── tasks
-    ├── docker
-    │   ├── defaults
-    │   ├── handlers
-    │   ├── tasks
-    │   └── templates
-    ├── docker-garby_container
-    │   ├── defaults
-    │   └── tasks
-    ├── haproxy_container
-    │   ├── defaults
-    │   ├── tasks
-    │   └── templates
-    ├── polipo_container
-    │   ├── defaults
-    │   └── tasks
-    ├── privoxy_container
-    │   ├── defaults
-    │   └── tasks
-    └── squid_container
-        ├── defaults
-        ├── tasks
-        └── templates
+├── README.adoc
+├── Vagrantfile
+├── all.yml
+├── ansible_run.sh
+├── bootstrap.yml
+├── docker-garby.yml
+├── haproxy_containers.yml
+├── hosts
+├── local.yml
+├── renovate.json
+├── roles
+│   ├── acng_container
+│   │   ├── defaults
+│   │   │   └── main.yml
+│   │   └── tasks
+│   │       ├── acng.yml
+│   │       └── main.yml
+│   ├── bootstrap
+│   │   └── tasks
+│   │       └── main.yml
+│   ├── docker
+│   │   ├── defaults
+│   │   │   └── main.yml
+│   │   ├── handlers
+│   │   │   └── main.yml
+│   │   ├── tasks
+│   │   │   ├── audit.yml
+│   │   │   ├── docker_group.yml
+│   │   │   ├── docker_install.yml
+│   │   │   ├── docker_python.yml
+│   │   │   ├── docker_service.yml
+│   │   │   └── main.yml
+│   │   └── templates
+│   │       ├── audit.rules.j2
+│   │       ├── docker.repo.j2
+│   │       └── docker.service.j2
+│   ├── docker-garby_container
+│   │   ├── defaults
+│   │   │   └── main.yml
+│   │   └── tasks
+│   │       ├── docker-garby.yml
+│   │       └── main.yml
+│   ├── haproxy_container
+│   │   ├── defaults
+│   │   │   └── main.yml
+│   │   ├── tasks
+│   │   │   ├── haproxy.yml
+│   │   │   ├── main.yml
+│   │   │   └── ufw.yml
+│   │   └── templates
+│   │       └── haproxy.cfg.j2
+│   ├── polipo_container
+│   │   ├── defaults
+│   │   │   └── main.yml
+│   │   └── tasks
+│   │       ├── main.yml
+│   │       └── polipo.yml
+│   ├── privoxy_container
+│   │   ├── defaults
+│   │   │   └── main.yml
+│   │   └── tasks
+│   │       ├── main.yml
+│   │       └── privoxy.yml
+│   └── squid_container
+│       ├── defaults
+│       │   └── main.yml
+│       ├── tasks
+│       │   ├── main.yml
+│       │   ├── squid.yml
+│       │   └── ufw.yml
+│       └── templates
+│           └── squid.conf.j2
+├── shutdown.yml
+└── squid_containers.yml
+
+28 directories, 46 files
 ----
