@@ -1,12 +1,12 @@
 ---
 - hosts: all
+  any_errors_fatal: true
   serial: 50%
-  roles:
-    - konstruktoid.hardening
-    - docker
-
-- hosts: squid
-  serial: 50%
-  roles:
-    - squid_container
+  order: shuffle
+  tasks:
+    - include_role:
+        name: konstruktoid.hardening
+    - include_role:
+        name: docker
+      when: ansible_distribution == 'Ubuntu'
 ...
