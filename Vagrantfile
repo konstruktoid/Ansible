@@ -5,16 +5,6 @@ Vagrant.configure(2) do |config|
     vb.default_nic_type = "Am79C973"
   end
 
-  config.vm.define "bionic" do |bionic|
-    bionic.vm.box = "ubuntu/bionic64"
-    bionic.ssh.insert_key = true
-    bionic.vm.network "private_network", ip: "10.2.3.40"
-    bionic.vm.hostname = "bionic"
-    bionic.vm.boot_timeout = 600
-    bionic.vm.provision "shell",
-      inline: "apt-get update && apt-get -y install python3-pexpect --no-install-recommends"
-  end
-
   (1..2).each do |i|
     config.vm.define "focal#{i}" do |focal|
       focal.vm.box = "ubuntu/focal64"
@@ -24,6 +14,16 @@ Vagrant.configure(2) do |config|
       focal.vm.provision "shell",
         inline: "apt-get update && apt-get -y install python3-pexpect --no-install-recommends"
     end
+  end
+
+  config.vm.define "buster" do |buster|
+    buster.vm.box = "bento/debian-10"
+    buster.ssh.insert_key = true
+    buster.vm.network "private_network", ip: "10.2.3.43"
+    buster.vm.hostname = "buster"
+    buster.vm.boot_timeout = 600
+    buster.vm.provision "shell",
+      inline: "apt-get update && apt-get -y install python3-pexpect --no-install-recommends"
   end
 
   config.vm.define "centos" do |centos|
@@ -45,13 +45,5 @@ Vagrant.configure(2) do |config|
     fedora.vm.network "private_network", ip: "10.2.3.45"
     fedora.vm.hostname = "fedora"
     fedora.vm.boot_timeout = 600
-  end
-
-  config.vm.define "buster" do |buster|
-    buster.vm.box = "bento/debian-10"
-    buster.ssh.insert_key = true
-    buster.vm.network "private_network", ip: "10.2.3.42"
-    buster.vm.hostname = "buster"
-    buster.vm.boot_timeout = 600
   end
 end
