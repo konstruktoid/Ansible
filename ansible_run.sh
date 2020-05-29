@@ -90,4 +90,5 @@ if [ -r /etc/ansible/hosts ] && [ "$1" != "vagrant" ]; then
 fi
 
 rm "$TMPHOSTS"
+
 ansible-playbook all.yml -i "$HOSTFILE" --timeout 30 --extra-vars "{\"sshd_allow_groups\":\"vagrant sudo ubuntu\",\"sshd_admin_net\":[$NETWORK/24,10.0.2.0/24], \"sshd_max_auth_tries\":6,\"ansible_python_interpreter\":\"/usr/bin/python3\"}"
