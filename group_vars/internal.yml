@@ -1,0 +1,7 @@
+---
+ansible_python_interpreter: "/usr/bin/python3"
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p vagrant@192.168.0.45"'
+sshd_admin_net: [10.2.3.44]
+sshd_allow_groups: "vagrant sudo ubuntu"
+sshd_max_auth_tries: 15
+...
