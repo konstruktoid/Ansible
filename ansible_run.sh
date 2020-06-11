@@ -2,27 +2,23 @@
 
 set -x -o pipefail
 
-NETWORK=$(ansible localhost -m setup -a "filter=ansible_default_ipv4" 2>/dev/null | grep "network" | awk '{print $NF}' | tr -d '",')
 KNOWN_HOSTS="$HOME/.ssh/known_hosts"
 TMPHOSTS=$(mktemp)
 HOSTRESOLV=0
 HOSTFILE="/etc/ansible/hosts"
 IFS=$'\n'
 
-if [ -z "$NETWORK" ]; then
-  echo "Missing network."
-  exit 1
-elif [ ! -r "$KNOWN_HOSTS" ]; then
+if [ ! -r "$KNOWN_HOSTS" ]; then
   echo "Verify the $KNOWN_HOSTS file."
 fi
 
-  if ! command -v vagrant 1>/dev/null; then
-    exit 1
-  fi
+if ! command -v vagrant 1>/dev/null; then
+  exit 1
+fi
 
-  if ! vagrant validate Vagrantfile; then
-    exit 1
-  fi
+if ! vagrant validate Vagrantfile; then
+  exit 1
+fi
 
 if ! find ./ -type f -name '*.y*ml' ! -name '.*' -print0 | \
   xargs -0 ansible-lint; then
@@ -42,6 +38,11 @@ if [ "$1" = "vagrant" ]; then
     exit 1
   fi
 
+  # Bump MaxAuthTries since Vagrant uses a separate SSH key for each machine
+  for VM in $(vagrant status | grep -iE 'running.*virtualbox' | awk '{print $1}'); do
+    vagrant ssh "$VM" -c "sudo sed -i.bak 's/.*MaxAuthTries.*/MaxAuthTries 15/g' /etc/ssh/sshd_config"
+  done
+
   if [ ! -r "./hosts" ] && [ ! -r "./.vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory" ] || [ "$2" = "hosts" ]; then
     echo "Generating Ansible hosts file using Vagrant."
     {
@@ -49,8 +50,6 @@ if [ "$1" = "vagrant" ]; then
       for VM in $(vagrant status | grep -iE 'running.*virtualbox' | awk '{print $1}'); do
         mapfile -t VAGRANT_SSH < <(vagrant ssh-config "$VM" | awk '{print $NF}')
         echo "${VAGRANT_SSH[0]} ansible_host=${VAGRANT_SSH[1]} ansible_user=${VAGRANT_SSH[2]} ansible_port=${VAGRANT_SSH[3]} ansible_private_key_file=${VAGRANT_SSH[7]}"
-        ssh-keygen -R "[${VAGRANT_SSH[1]}]:${VAGRANT_SSH[3]}" 2>/dev/null 1>&2
-        ssh-keyscan -p"${VAGRANT_SSH[3]}" "${VAGRANT_SSH[1]}" >> "$KNOWN_HOSTS" 2>/dev/null
       done
     } > ./hosts
     HOSTFILE="./hosts"
@@ -91,4 +90,4 @@ fi
 
 rm "$TMPHOSTS"
 
-ansible-playbook all.yml -i "$HOSTFILE" --timeout 30 --extra-vars "{\"sshd_allow_groups\":\"vagrant sudo ubuntu\",\"sshd_admin_net\":[$NETWORK/24,10.0.2.0/24], \"sshd_max_auth_tries\":6,\"ansible_python_interpreter\":\"/usr/bin/python3\"}"
+ansible-playbook all.yml -i "$HOSTFILE" --timeout 30
