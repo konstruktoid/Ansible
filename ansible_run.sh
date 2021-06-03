@@ -20,13 +20,13 @@ if ! vagrant validate Vagrantfile; then
   exit 1
 fi
 
-if ! find ./ -type f -name '*.y*ml' ! -name '.*' -print0 | \
+if ! find . -type f -name '*.y*ml' ! -name '.*' -print0 | \
   xargs -0 ansible-lint; then
     echo "ansible-lint failed."
     exit 1
 fi
 
-if ! find ./ -type f -name '*.y*ml' ! -name '.*' -print0 | \
+if ! find . -type f -name '*.y*ml' ! -name '.*' -print0 | \
   xargs -0 yamllint -d "{extends: default, rules: {line-length: {level: warning}}}"; then
     echo "yamllint failed."
     exit 1
@@ -37,11 +37,6 @@ if [ "$1" = "vagrant" ]; then
     echo "No vagrant boxes are running. Exiting."
     exit 1
   fi
-
-  # Bump MaxAuthTries since Vagrant uses a separate SSH key for each machine
-  for VM in $(vagrant status | grep -iE 'running.*virtualbox' | awk '{print $1}'); do
-    vagrant ssh "$VM" -c "sudo sed -i.bak 's/.*MaxAuthTries.*/MaxAuthTries 15/g' /etc/ssh/sshd_config"
-  done
 
   if [ ! -r "./hosts" ] && [ ! -r "./.vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory" ] || [ "$2" = "hosts" ]; then
     echo "Generating Ansible hosts file using Vagrant."
