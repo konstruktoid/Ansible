@@ -1,6 +1,28 @@
 ---
 - hosts: localhost
-  roles:
-    - konstruktoid.hardening
-    - docker
+  any_errors_fatal: true
+  tasks:
+    - name: install git
+      become: 'yes'
+      package:
+        name: git
+        state: present
+
+    - name: checkout konstruktoid.hardening
+      become: 'yes'
+      ansible.builtin.git:
+        repo: 'https://github.com/konstruktoid/ansible-role-hardening'
+        dest: /etc/ansible/roles/konstruktoid.hardening
+        version: master
+
+    - name: include the hardening role
+      include_role:
+        name: konstruktoid.hardening
+      vars:
+        block_blacklisted: true
+        sshd_admin_net:
+          - 10.0.2.0/24
+          - 192.168.0.0/24
+          - 192.168.1.0/24
+        suid_sgid_permissions: false
 ...
