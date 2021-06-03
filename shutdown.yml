@@ -1,13 +1,7 @@
-# ansible-playbook --extra-vars="hosts=192.168.1.5" shutdown.yml -K
 ---
-- name: shutdown
-  become: 'yes'
-  become_method: sudo
-  hosts: "{{ hosts }}"
-
+- hosts: all
   tasks:
   - name: shutdown hosts
     command: /sbin/shutdown -h now
     when: ansible_facts['os_family'] == "Debian"
-    ignore_errors: 'yes'
 ...
