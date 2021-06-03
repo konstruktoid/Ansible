@@ -1,7 +1,8 @@
 ---
 ansible_python_interpreter: "/usr/bin/python3"
-ansible_ssh_common_args: '-o ForwardAgent=yes -o ControlMaster=auto -o ControlPersist=60s -o StrictHostKeyChecking=no'
+ansible_ssh_common_args: '-o ControlMaster=auto -o ControlPersist=60s'
 sshd_admin_net: [192.168.0.0/24]
 sshd_allow_groups: "vagrant sudo ubuntu"
-sshd_max_auth_tries: 15
+sshd_allow_agent_forwarding: 'yes'
+sshd_allow_tcp_forwarding: 'yes'
 ...
