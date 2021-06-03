@@ -34,6 +34,6 @@ frontend proxy-in
 backend proxy-out
   mode http
   balance roundrobin
-  {% for host in groups['proxy'] %}
+  {% for host in groups['webserver'] %}
   server {{ host }} {{ hostvars[host]['ansible_default_ipv4']['address'] }}:{{ proxy_port }} check port {{ proxy_port }} on-marked-down shutdown-sessions
   {% endfor %}
