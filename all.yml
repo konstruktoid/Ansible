@@ -1,12 +1,23 @@
 ---
+- hosts: bastion
+  any_errors_fatal: true
+  serial: 50%
+  order: shuffle
+  tasks:
+    - name: include hardening role
+      include_role:
+        name: konstruktoid.hardening
+
 - hosts: all
   any_errors_fatal: true
   serial: 50%
   order: shuffle
   tasks:
-    - include_role:
+    - name: include hardening role
+      include_role:
         name: konstruktoid.hardening
-    - include_role:
+    - name: include docker role
+      include_role:
         name: docker
       when: ansible_distribution == 'Ubuntu'
 ...
